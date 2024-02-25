@@ -3,9 +3,12 @@ package data
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Runtime int32
+
+var ErrInvalidRuntimeFormat = fmt.Errorf("invalid runtime format")
 
 // MarshalJSON is a custom JSON marshaler for the Runtime type.
 // This method is called by the json.Marshal() function and it returns the JSON representation of the Runtime type.
@@ -18,4 +21,30 @@ func (r Runtime) MarshalJSON() ([]byte, error) {
 	quotedJSONValue := strconv.Quote(jsonValue)
 
 	return []byte(quotedJSONValue), nil
+}
+
+// Implement a UnmarshalJSON() method on the Runtime type so that it satisfies the
+// json.Unmarshaler interface. IMPORTANT: Because UnmarshalJSON() needs to modify the
+// receiver (our Runtime type), we must use a pointer receiver for this to work
+// correctly. Otherwise, we will only be modifying a copy (which is then discarded when
+// this method returns).
+func (r *Runtime) UnmarshalJSON(jsonValue []byte) error {
+	unquotedJSONValue, err := strconv.Unquote(string(jsonValue))
+	if err != nil {
+		return ErrInvalidRuntimeFormat
+	}
+
+	parts := strings.Split(unquotedJSONValue, " ")
+
+	if len(parts) != 2 || parts[1] != "mins" {
+		return ErrInvalidRuntimeFormat
+	}
+
+	i, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return ErrInvalidRuntimeFormat
+	}
+
+	*r = Runtime(i)
+	return nil
 }

@@ -1,15 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"github.com/noloman/greenlight/internal/data"
 	"net/http"
 	"time"
-
-	"github.com/noloman/greenlight/internal/data"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create a new movie")
+	var input struct {
+		Title   string       `json:"title"`
+		Year    int32        `json:"year,omitempty"`
+		Runtime data.Runtime `json:"runtime"`
+		Genres  []string     `json:"genres"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+	}
 }
 
 func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request) {
