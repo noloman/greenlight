@@ -17,7 +17,7 @@ func (app *application) logError(r *http.Request, err error) {
 
 // Add a new errorResponse helper to the application struct.
 // This will be used to send a JSON response containing the provided message and status code.
-func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message string) {
+func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
 	env := envelope{"error": message}
 
 	err := app.writeJSON(w, status, env, nil)
@@ -48,4 +48,8 @@ func (app *application) serverErrorResponse(w http.ResponseWriter, r *http.Reque
 func (app *application) methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
 	message := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
 	app.errorResponse(w, r, http.StatusMethodNotAllowed, message)
+}
+
+func (app *application) fieldValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	app.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
