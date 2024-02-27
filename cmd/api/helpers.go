@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
+	"github.com/noloman/greenlight/internal/data/validator"
 )
 
 type envelope map[string]any
@@ -37,10 +40,6 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data envelo
 	w.Write(js)
 
 	return nil
-}
-
-func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
-	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
 }
 
 // Define a readJSON helper.
@@ -122,4 +121,33 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 		return errors.New("request body must only contain a single JSON value")
 	}
 	return nil
+}
+
+func (app *application) readString(values url.Values, key string, defaultValue string) string {
+	s := values.Get(key)
+	if s == "" {
+		return defaultValue
+	}
+	return s
+}
+
+func (app *application) readCSV(values url.Values, key string, defaultValue []string) []string {
+	csv := values.Get(key)
+	if csv == "" {
+		return defaultValue
+	}
+	return strings.Split(csv, ",")
+}
+
+func (app *application) readInt(values url.Values, key string, defaultValue int, v *validator.Validator) int {
+	s := values.Get(key)
+	if s == "" {
+		return defaultValue
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		v.AddError(key, "must be an integer value")
+		return defaultValue
+	}
+	return i
 }

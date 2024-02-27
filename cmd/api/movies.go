@@ -8,6 +8,33 @@ import (
 	"net/http"
 )
 
+func (app *application) listMovieHandler(w http.ResponseWriter, r *http.Request) {
+	// To keep things consistent with our other handlers, we'll define an input struct
+	// to hold the expected values from the request query string.
+	var input struct {
+		Title   string
+		Genres  []string
+		Filters data.Filters
+	}
+	v := validator.New()
+	values := r.URL.Query()
+
+	input.Title = app.readString(values, "title", "")
+	input.Genres = app.readCSV(values, "genres", []string{})
+
+	input.Filters.Page = app.readInt(values, "page", 1, v)
+	input.Filters.PageSize = app.readInt(values, "page_size", 20, v)
+	input.Filters.Sort = app.readString(values, "sort", "id")
+	input.Filters.SortSafeList = []string{"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime"}
+
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
+		app.fieldValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
+}
+
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Title   string       `json:"title"`

@@ -39,6 +39,10 @@ func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request)
 	app.errorResponse(w, r, http.StatusNotFound, message)
 }
 
+func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
 // Add a new serverErrorResponse helper to the application struct.
 // This will be used to send a 500 Internal Server Error response to the client.
 func (app *application) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
