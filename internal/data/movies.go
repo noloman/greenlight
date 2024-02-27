@@ -57,6 +57,10 @@ func (m MovieModel) Get(id int64) (*Movie, error) {
 }
 
 func (m MovieModel) Update(movie *Movie) error {
+	// If it’s important to you that the version identifier isn’t guessable, then a good option is to use a high-entropy random string such as a UUID in the version field. PostgreSQL has a UUID type and the uuid-ossp extension which you could use for this purpose like so:
+	// UPDATE movies SET title = $1, year = $2, runtime = $3, genres = $4, version = uuid_generate_v4()
+	// WHERE id = $5 AND version = $6
+	// RETURNING version
 	query := `UPDATE movies SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1 WHERE id = $5 AND version = $6 RETURNING version`
 	args := []any{movie.Title,
 		movie.Year,
@@ -65,7 +69,16 @@ func (m MovieModel) Update(movie *Movie) error {
 		movie.ID,
 		movie.Version,
 	}
-	return m.DB.QueryRow(query, args...).Scan(&movie.Version)
+	err := m.DB.QueryRow(query, args...).Scan(&movie.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrRecordNotFound
+		default:
+			return err
+		}
+	}
+	return nil
 }
 
 func (m MovieModel) Delete(id int64) error {

@@ -27,6 +27,11 @@ func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, st
 	}
 }
 
+func (app *application) editConflictResponse(w http.ResponseWriter, r *http.Request) {
+	message := "unable to update the record due to an edit conflict, please try again"
+	app.errorResponse(w, r, http.StatusConflict, message)
+}
+
 // Add a new notFoundResponse helper to the application struct.
 // This will be used to send a 404 Not Found response to the client.
 func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request) {
