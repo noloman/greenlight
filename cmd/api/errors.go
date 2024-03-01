@@ -32,6 +32,11 @@ func (app *application) editConflictResponse(w http.ResponseWriter, r *http.Requ
 	app.errorResponse(w, r, http.StatusConflict, message)
 }
 
+func (app *application) rateLimitExceededResponse(w http.ResponseWriter, r *http.Request) {
+	message := "rate limit exceeded"
+	app.errorResponse(w, r, http.StatusTooManyRequests, message)
+}
+
 // Add a new notFoundResponse helper to the application struct.
 // This will be used to send a 404 Not Found response to the client.
 func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request) {
