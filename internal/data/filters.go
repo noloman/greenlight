@@ -13,6 +13,14 @@ type Filters struct {
 	SortSafeList []string
 }
 
+func (f Filters) offset() int {
+	return (f.Page - 1) * f.PageSize
+}
+
+func (f Filters) limit() int {
+	return f.PageSize
+}
+
 func (f Filters) SortColumn() string {
 	for _, safeValue := range f.SortSafeList {
 		if safeValue == f.Sort {
