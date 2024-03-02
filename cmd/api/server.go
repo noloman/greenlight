@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -20,6 +22,8 @@ func (app *application) serve() error {
 		ErrorLog:     slog.NewLogLogger(app.logger.Handler(), slog.LevelError),
 	}
 
+	shutdownError := make(chan error)
+
 	go func() {
 		// Create a quit channel which carries os.Signal values.
 		quit := make(chan os.Signal, 1)
@@ -38,11 +42,32 @@ func (app *application) serve() error {
 		// in the log entry attributes.
 		app.logger.Info("caught signal", "signal", s.String())
 
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		// Call Shutdown() on our server, passing in the context we just made.
+		// Shutdown() will return nil if the graceful shutdown was successful, or an
+		// error (which may happen because of a problem closing the listeners, or
+		// because the shutdown didn't complete before the 30-second context deadline is
+		// hit). We relay this return value to the shutdownError channel.
+		shutdownError <- srv.Shutdown(ctx)
+
 		// Exit the application with a 0 (success) status code.
 		os.Exit(0)
 	}()
 
 	app.logger.Info("starting server", "addr", srv.Addr, "env", app.config.env)
 
-	return srv.ListenAndServe()
+	err := srv.ListenAndServe()
+	if !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	err = <-shutdownError
+	if err != nil {
+		return err
+	}
+
+	app.logger.Info("stopped server", "addr", srv.Addr)
+	return nil
 }
