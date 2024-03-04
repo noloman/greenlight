@@ -3,9 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/noloman/greenlight/internal/data"
 	"github.com/noloman/greenlight/internal/data/validator"
-	"net/http"
 )
 
 func (app *application) listMovieHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +29,7 @@ func (app *application) listMovieHandler(w http.ResponseWriter, r *http.Request)
 	input.Filters.SortSafeList = []string{"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime"}
 
 	if data.ValidateFilters(v, input.Filters); !v.Valid() {
-		app.fieldValidationResponse(w, r, v.Errors)
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
@@ -67,7 +68,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	v := validator.New()
 
 	if data.ValidateMovie(v, movie); !v.Valid() {
-		app.fieldValidationResponse(w, r, v.Errors)
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
@@ -151,7 +152,7 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 
 	v := validator.New()
 	if data.ValidateMovie(v, movie); !v.Valid() {
-		app.fieldValidationResponse(w, r, v.Errors)
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
