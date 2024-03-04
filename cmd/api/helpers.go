@@ -151,3 +151,15 @@ func (app *application) readInt(values url.Values, key string, defaultValue int,
 	}
 	return i
 }
+
+func (app *application) background(fn func()) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.Error(fmt.Sprintf("%v", err))
+			}
+		}()
+		// Execute the function that is passed by parameter
+		fn()
+	}()
+}
