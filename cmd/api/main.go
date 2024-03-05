@@ -4,12 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"log/slog"
+	"os"
+	"sync"
+	"time"
+
 	_ "github.com/lib/pq"
 	"github.com/noloman/greenlight/internal/data"
 	"github.com/noloman/greenlight/internal/mailer"
-	"log/slog"
-	"os"
-	"time"
 )
 
 const version = "1.0.0"
@@ -42,6 +44,7 @@ type application struct {
 	logger *slog.Logger
 	models data.Models
 	mailer mailer.Mailer
+	wg     sync.WaitGroup
 }
 
 func main() {
