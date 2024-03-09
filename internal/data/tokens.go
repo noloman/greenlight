@@ -11,6 +11,10 @@ import (
 	"github.com/noloman/greenlight/internal/data/validator"
 )
 
+const (
+	ScopeActivation = "activation"
+)
+
 type Token struct {
 	Plaintext string
 	Hash      []byte
@@ -75,7 +79,7 @@ func (m TokenModel) New(userID int64, ttl time.Duration, scope string) (*Token, 
 
 func (m TokenModel) Insert(token *Token) error {
 	query := `INSERT
-	INTO token (hash, user_id, expiry, scope)
+	INTO tokens (hash, user_id, expiry, scope)
 	VALUES ($1, $2, $3, $4)
 	`
 	args := []any{token.Hash, token.UserID, token.Expiry, token.Scope}
