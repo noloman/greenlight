@@ -55,7 +55,7 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 	return token, nil
 }
 
-func ValidatePlaintext(v *validator.Validator, tokenPlaintext string) {
+func ValidateTokenPlaintext(v *validator.Validator, tokenPlaintext string) {
 	v.Check(tokenPlaintext != "", "token", "A token must be provided")
 	// The length of the plaintext token string itself depends on how those 16 random bytes are encoded to create a string.
 	// In our case we encode the random bytes to a base-32 string, which results in a string with 26 characters.
