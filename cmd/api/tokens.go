@@ -36,6 +36,7 @@ func (app *application) createAuthenticationTokenHandler(w http.ResponseWriter, 
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
+		return
 	}
 
 	match, err := user.Password.Matches(input.Password)
