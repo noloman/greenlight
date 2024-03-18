@@ -10,7 +10,7 @@ var (
 	ErrEditConflict   = errors.New("edit conflict")
 )
 
-type Models struct {
+type  Models struct {
 	Movies MovieModel
 	Users  UserModel
 	Tokens TokenModel
